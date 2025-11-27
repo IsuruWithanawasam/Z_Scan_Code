@@ -72,6 +72,32 @@ The simulation accounts for the full nonlinear phase accumulation rather than re
 
 ---
 
+## Data Acquisition and Unit Conversion
+
+### Photodetector Signal Processing
+
+The raw data from the photodetectors is recorded in **nVs (nano-volt-seconds)**, representing the integrated voltage pulse from each laser shot. The code converts this to average optical power in Watts using a linear calibration factor.
+
+**Conversion mechanism**:
+
+```python
+CALIBRATION_FACTOR_W_PER_NVS = 0.05714  # W/nVs
+P_average [W] = Signal [nVs] × 0.05714
+```
+
+**Physical basis**:
+- The photodiode generates a voltage pulse proportional to instantaneous optical power
+- Integration over the pulse duration yields a signal proportional to pulse energy
+- The calibration factor consolidates:
+  - Detector responsivity (A/W)
+  - Load resistance (Ω, converting current to voltage)
+  - Oscilloscope integration settings
+  - Repetition rate (converting pulse energy to average power)
+
+This single-step conversion is applied to all Open Aperture and Closed Aperture power measurements during data preprocessing. The calibration factor must be determined experimentally for your specific detection setup using a calibrated power meter.
+
+---
+
 ## Usage Instructions
 
 ### Data Preparation
