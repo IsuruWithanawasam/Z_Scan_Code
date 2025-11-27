@@ -4,6 +4,9 @@ Python software for extracting **nonlinear refractive index (n₂)** from Z-scan
 
 This implementation adapts the open-source framework by [Arango et al.](https://github.com/juanjosearango/z-scan-parameter-extraction-program) for transparent dielectrics where traditional open aperture analysis is unreliable.
 
+**Modified by**: Isuru Withanawasam  
+**Purpose**: Specialized analysis of transparent media with negligible nonlinear absorption
+
 ---
 
 ## Experimental Configuration
