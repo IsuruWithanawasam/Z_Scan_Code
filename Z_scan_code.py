@@ -26,8 +26,10 @@ k_ext = 0.0 # Transparent at 1060nm
 L_sample = 2e-3 # 2mm thickness
 
 # !!! VERIFY LASER SPECS !!!
-tau = 90e-15 #s 
-f_rep = 100e6 #Hz 
+#tau = 90e-15 #s 
+#f_rep = 100e6 #Hz 
+tau = 12e-12  # 12 ps
+f_rep = 1e3   # 1 kHz
 
 lda_0 = 1.06e-6 # 1060 nm
 
@@ -258,19 +260,35 @@ for ii in np.arange(number_of_power_sweeps):
     lin_params[ii,0], lin_params[ii,1], lin_params[ii,2], lin_params[ii,3], lin_params[ii,4] = stats.linregress(dataX[mask], dataY[mask])
 
 # !!! MANUAL OVERRIDE FOR PEAK POWERS !!!
-print("\n⚠️ OVERRIDING PEAK POWER VALUES (Based on Graph) ⚠️")
-# Values read from your uploaded image:
-manual_peak_powers = [0.0037,0.00287,0.00234,0.00185,0.0013,0.000905] 
+# !!! MANUAL OVERRIDE: CALCULATE PEAK FROM AVERAGE !!!
+print("\n⚠️ CALCULATING PEAK POWERS FROM AVERAGE POWERS ⚠️")
 
+# 1. Enter your measured AVERAGE powers (in Watts) here:
+# (These are the values you provided: 3.7mW down to 0.9mW)
+average_powers_W = np.array([0.0037, 0.00287, 0.00234, 0.00185, 0.0013, 0.000905])
+
+# 2. Calculate Peak Power automatically using your tau and f_rep
+# Formula: P_peak = P_avg / (tau * f_rep)
+manual_peak_powers = average_powers_W / (tau * f_rep)
+
+# Verification Print
+print(f" >> Laser Parameters: tau={tau*1e15:.0f}fs, f_rep={f_rep/1e6:.0f}MHz")
+print(f" >> Input Average Powers (W): {average_powers_W}")
+print(f" >> Calculated Peak Powers (W): {manual_peak_powers}")
+
+# Validation Logic
 if len(manual_peak_powers) != number_of_power_sweeps:
     print(f"❌ ERROR: You provided {len(manual_peak_powers)} values, but data has {number_of_power_sweeps} sweeps.")
     P_peak_max = lin_params[-1,1]/(tau*f_rep) # Fallback
 else:
-    print(f"Using Manual Peak Powers: {manual_peak_powers}")
-    P_peak_max = manual_peak_powers[-1]
-    # Update lin_params to trick subsequent functions
+    print("✅ Peak powers successfully calculated from average.")
+    P_peak_max = manual_peak_powers[-1] # Assuming the list is low->high or high->low
+    
+    # Update lin_params so the rest of the code uses these new values
     for ii in range(number_of_power_sweeps):
-        lin_params[ii,1] = manual_peak_powers[ii] * (tau * f_rep)
+        # The code expects P_avg in column 1. We put our manual P_avg there.
+        # (The code later divides this by tau*f_rep to get P_peak, so we are consistent)
+        lin_params[ii,1] = average_powers_W[ii]
 
 lin_params2=np.zeros((number_of_power_sweeps,6))
 for ii in np.arange(number_of_power_sweeps):
